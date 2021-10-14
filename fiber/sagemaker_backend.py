@@ -25,6 +25,7 @@ from os.path import expanduser
 import docker
 import psutil
 import requests
+import subprocessing
 
 import fiber
 import fiber.core as core
