@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+import json
 import logging
 import multiprocessing as mp
 import os
@@ -88,6 +88,11 @@ class Backend(core.Backend):
         proc.terminate()
 
     def get_listen_addr(self):
+        
+        with open('/opt/ml/input/config/resourceconfig.json') as f:
+            sagemaker_config = json.load(f)
+
+        print(sagemaker_config)
         ip, ifce = find_listen_address()
         
         ifce = "eth0"
@@ -99,4 +104,6 @@ class Backend(core.Backend):
                 "Can't find a usable IPv4 address to listen. ifce_name: {}, "
                 "ifces: {}".format(ifce, psutil.net_if_addrs()))
         # use 0 to bind to a random free port number
+        
+        ip ="algo-1"
         return ip, 0, ifce
