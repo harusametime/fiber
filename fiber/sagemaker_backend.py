@@ -47,155 +47,45 @@ STATUS_MAP = {
 HOME_DIR = expanduser("~")
 
 
-class DockerJob(core.Job):
-    def update(self):
-        container = self.data
-        self.host = container.attrs['NetworkSettings']['IPAddress']
-
-
 class Backend(core.Backend):
     name = "sagemaker"
 
     def __init__(self):
-        # Based on this link, no lock is needed accessing self.client
-        # https://github.com/docker/docker-py/issues/619
-        self.client = docker.from_env()
+        pass
 
     def create_job(self, job_spec):
-#         logger.debug("[docker]create_job: %s", job_spec)
-#         cwd = os.getcwd()
-#         volumes = {cwd: {'bind': cwd, 'mode': 'rw'},
-#                    HOME_DIR: {'bind': HOME_DIR, 'mode': 'rw'}}
-#         debug = config.debug
-
-#         tty = debug
-#         stdin_open = debug
-
-#         if job_spec.image is None:
-#             image = config.default_image
-#         else:
-#             image = job_spec.image
-        
-        
-#         import subprocess
-#         proc = subprocess.Popen(command)
-#         proc.communicate()
-
-#         try:
-#             print(image)
-#             print(job_spec)
-#             print(job_spec.command)
-#             print(volumes)
-#             print(tty)
-#             print(stdin_open)        
-#             container = self.client.containers.run(
-#                 image,
-#                 job_spec.command,
-#                 name=job_spec.name + '-' + str(uuid.uuid4()),
-#                 volumes=volumes,
-#                 cap_add=["SYS_PTRACE"],
-#                 tty=tty,
-#                 stdin_open=stdin_open,
-#                 detach=True
-#             )
-#         except docker.errors.ImageNotFound:
-#             raise mp.ProcessError(
-#                 "Docker image \"{}\" not found or cannot be pulled from "
-#                 "docker registry.".format(job_spec.image))
-
-#         except docker.errors.APIError as e:
-#             raise mp.ProcessError(
-#                     "Failed to start docker container: {}".format(e)
-#             )
-
         proc = subprocess.Popen(job_spec.command)
         job = core.Job(proc, proc.pid)
         job.host = 'localhost'
 
         return job
 
-    def _reload(self, container):
-        container._fiber_backend_reloading = True
-        logger.debug("container reloading %s", container.name)
-        container.reload()
-        if config.debug:
-            time.sleep(0.1)
-        else:
-            time.sleep(1)
-
-        container._fiber_backend_reloading = False
-
-    def get_job_logs(self, job):
-        container = job.data
-        return container.logs(stream=False).decode('utf-8')
-
     def get_job_status(self, job):
-        container = job.data
+        proc = job.data
 
-        if config.merge_output:
-            print(container.logs(stream=False).decode('utf-8'))
+        if proc.poll() is not None:
+            # subprocess has terminated
+            return ProcessStatus.STOPPED
 
-        logging.debug("get_job_status: %s", container.status)
-        status = STATUS_MAP[container.status]
-
-        if not container._fiber_backend_reloading:
-            td = threading.Thread(target=self._reload, args=(container,))
-            td.start()
-            logger.debug("start container reloading thread %s", container.name)
-        return status
+        return ProcessStatus.STARTED
 
     def wait_for_job(self, job, timeout):
-        container = job.data
-        logger.debug("wait_for_job: %s", container.name)
+        proc = job.data
 
-        if config.merge_output:
-            print(container.logs(stream=False).decode('utf-8'))
+        if timeout == 0:
+            return proc.poll()
 
-        # Can't set timeout to 0 for container.wait. Use a very
-        # short wait time instead
-        if timeout is not None and timeout <= 0:
-            timeout = 0.05
         try:
-            res = container.wait(timeout=timeout)
-        except requests.exceptions.ConnectionError:
-            # Docker SDK for Python document said that wait will raise
-            # requests.exceptions.ReadTimeout exception, but actually it
-            # raises requests.exceptions.ConnectionError.
-            # See https://docker-py.readthedocs.io/en/stable/containers.html#docker.models.containers.Container.wait # noqa: E501
-
-            logger.debug("wait_for_job done(ConnectionError): %s",
-                         container.name)
-            return None
-        except requests.exceptions.ReadTimeout:
-            # Incase it raises ReadTimeout
-            logger.debug("wait_for_job done(timeout): %s", container.name)
+            proc.wait(timeout=timeout)
+        except subprocess.TimeoutExpired:
             return None
 
-        if config.merge_output:
-            print(container.logs(stream=False).decode('utf-8'))
-
-        logger.debug("wait_for_job done: %s", container.name)
-
-        return res['StatusCode']
+        return proc.returncode
 
     def terminate_job(self, job):
-        logging.debug("terminate_job")
-        container = job.data
+        proc = job.data
 
-        if config.merge_output:
-            print(container.logs(stream=False).decode('utf-8'))
-
-        logger.debug("before terminating a container, status: %s",
-                     container.status)
-        try:
-            container.kill()
-        except docker.errors.APIError as e:
-            if e.status_code == 409:
-                logger.warning("container is not running %s", str(e))
-                # Ignore 409 error which usually means container is not running
-                return
-            raise e
-        logger.debug("terminate job finished, %s", container.status)
+        proc.terminate()
 
     def get_listen_addr(self):
         ip, ifce = find_listen_address()
