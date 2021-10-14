@@ -90,26 +90,9 @@ class Backend(core.Backend):
     def get_listen_addr(self):
         ip, ifce = find_listen_address()
         
-        print(sys.platform)
         ifce = "eth0"
         ip = find_ip_by_net_interface(ifce)
         print(f"IP addrss: {ip}")
-
-#         if sys.platform == "darwin":
-#             # use the same hostname for both master and non master process
-#             # because docker.for.mac.localhost resolves to different inside
-#             # and outside docker container. "docker.for.mac.localhost" is
-#             # the name that doesn't change in and outside the container.
-#             return "docker.for.mac.localhost", 0, ifce
-
-#         if not isinstance(fiber.current_process(), fiber.Process):
-#             # not inside docker
-#             ifce = "docker0"
-#             ip = find_ip_by_net_interface(ifce)
-
-        if ip is None:
-            ip = "172.18.0.2"
-            print(f"IP address set to {ip}")
 
         if ip is None:
             raise mp.ProcessError(
