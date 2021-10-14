@@ -93,17 +93,10 @@ class Backend(core.Backend):
             sagemaker_config = json.load(f)
 
         print(sagemaker_config)
-        ip, ifce = find_listen_address()
-        
-        ifce = "eth0"
-        ip = find_ip_by_net_interface(ifce)
-        print(f"IP addrss: {ip}")
+        ifce = sagemaker_config["network_interface_name"]
+        ip = sagemaker_config["current_host"]
 
-        if ip is None:
-            raise mp.ProcessError(
-                "Can't find a usable IPv4 address to listen. ifce_name: {}, "
-                "ifces: {}".format(ifce, psutil.net_if_addrs()))
-        # use 0 to bind to a random free port number
-        
-        ip ="algo-1"
+        if ip == algo-1":
+            ip = 'algo-2'
+
         return ip, 0, ifce
