@@ -55,6 +55,7 @@ class Backend(core.Backend):
 
     def create_job(self, job_spec):
         proc = subprocess.Popen(job_spec.command)
+        print(job_spec)
         job = core.Job(proc, proc.pid)
         job.host = 'localhost'
 
