@@ -76,16 +76,24 @@ class Backend(core.Backend):
             image = job_spec.image
 
         try:
-            container = self.client.containers.run(
-                image,
-                job_spec.command,
-                name=job_spec.name + '-' + str(uuid.uuid4()),
-                volumes=volumes,
-                cap_add=["SYS_PTRACE"],
-                tty=tty,
-                stdin_open=stdin_open,
-                detach=True
-            )
+            print(image)
+            print(job_spec)
+            print(job_spec.command)
+            print(volumes)
+            print(tty)
+            print(stdion_open)
+            
+            
+#             container = self.client.containers.run(
+#                 image,
+#                 job_spec.command,
+#                 name=job_spec.name + '-' + str(uuid.uuid4()),
+#                 volumes=volumes,
+#                 cap_add=["SYS_PTRACE"],
+#                 tty=tty,
+#                 stdin_open=stdin_open,
+#                 detach=True
+#             )
         except docker.errors.ImageNotFound:
             raise mp.ProcessError(
                 "Docker image \"{}\" not found or cannot be pulled from "
