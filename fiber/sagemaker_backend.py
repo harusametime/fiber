@@ -94,7 +94,8 @@ class Backend(core.Backend):
             sagemaker_config = json.load(f)
 
         print(sagemaker_config)
-        ifce = sagemaker_config["network_interface_name"]
+        #ifce = sagemaker_config["network_interface_name"]
+        ifce = 'eth0'
         ip = sagemaker_config["current_host"]
 
         if ip == "algo-1":
