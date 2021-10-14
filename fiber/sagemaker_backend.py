@@ -96,7 +96,7 @@ class Backend(core.Backend):
         ifce = sagemaker_config["network_interface_name"]
         ip = sagemaker_config["current_host"]
 
-        if ip == algo-1":
+        if ip == "algo-1":
             ip = 'algo-2'
 
         return ip, 0, ifce
