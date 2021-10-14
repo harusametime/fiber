@@ -81,7 +81,7 @@ class Backend(core.Backend):
             print(job_spec.command)
             print(volumes)
             print(tty)
-            print(stdion_open)
+            print(stdin_open)
             
             
 #             container = self.client.containers.run(
