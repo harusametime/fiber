@@ -53,7 +53,7 @@ class DockerJob(core.Job):
 
 
 class Backend(core.Backend):
-    name = "docker"
+    name = "sagemaker"
 
     def __init__(self):
         # Based on this link, no lock is needed accessing self.client
