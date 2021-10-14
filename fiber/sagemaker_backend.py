@@ -61,29 +61,32 @@ class Backend(core.Backend):
         self.client = docker.from_env()
 
     def create_job(self, job_spec):
-        logger.debug("[docker]create_job: %s", job_spec)
-        cwd = os.getcwd()
-        volumes = {cwd: {'bind': cwd, 'mode': 'rw'},
-                   HOME_DIR: {'bind': HOME_DIR, 'mode': 'rw'}}
-        debug = config.debug
+#         logger.debug("[docker]create_job: %s", job_spec)
+#         cwd = os.getcwd()
+#         volumes = {cwd: {'bind': cwd, 'mode': 'rw'},
+#                    HOME_DIR: {'bind': HOME_DIR, 'mode': 'rw'}}
+#         debug = config.debug
 
-        tty = debug
-        stdin_open = debug
+#         tty = debug
+#         stdin_open = debug
 
-        if job_spec.image is None:
-            image = config.default_image
-        else:
-            image = job_spec.image
+#         if job_spec.image is None:
+#             image = config.default_image
+#         else:
+#             image = job_spec.image
+        
+        
+#         import subprocess
+#         proc = subprocess.Popen(command)
+#         proc.communicate()
 
-        try:
-            print(image)
-            print(job_spec)
-            print(job_spec.command)
-            print(volumes)
-            print(tty)
-            print(stdin_open)
-            
-            
+#         try:
+#             print(image)
+#             print(job_spec)
+#             print(job_spec.command)
+#             print(volumes)
+#             print(tty)
+#             print(stdin_open)        
 #             container = self.client.containers.run(
 #                 image,
 #                 job_spec.command,
@@ -94,19 +97,20 @@ class Backend(core.Backend):
 #                 stdin_open=stdin_open,
 #                 detach=True
 #             )
-        except docker.errors.ImageNotFound:
-            raise mp.ProcessError(
-                "Docker image \"{}\" not found or cannot be pulled from "
-                "docker registry.".format(job_spec.image))
+#         except docker.errors.ImageNotFound:
+#             raise mp.ProcessError(
+#                 "Docker image \"{}\" not found or cannot be pulled from "
+#                 "docker registry.".format(job_spec.image))
 
-        except docker.errors.APIError as e:
-            raise mp.ProcessError(
-                    "Failed to start docker container: {}".format(e)
-            )
+#         except docker.errors.APIError as e:
+#             raise mp.ProcessError(
+#                     "Failed to start docker container: {}".format(e)
+#             )
 
-        job = DockerJob(container, container.id)
-        # delayed
-        container._fiber_backend_reloading = False
+        proc = subprocess.Popen(job_spec.command)
+        job = core.Job(proc, proc.pid)
+        job.host = 'localhost'
+
         return job
 
     def _reload(self, container):
