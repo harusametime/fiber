@@ -21,7 +21,7 @@ import fiber.config as config
 
 
 _backends = {}
-available_backend = ['kubernetes', 'docker', 'local']
+available_backend = ['sagemaker','kubernetes', 'docker', 'local']
 
 
 def is_inside_kubenetes_job():
