@@ -122,11 +122,15 @@ class Backend(core.Backend):
             # logger.debug("use interface docker0")
             ifce = "eth0"
             ip = find_ip_by_net_interface(ifce)
+            print(f"inside: {ip}")
+
         else:
             # inside a Fiber process
             # logger.debug("use interface eth0")
             # ip = find_ip_by_net_interface("eth0")
             ip, ifce = find_listen_address()
+            print(f"inside: {ip}")
+
 
         # ip = find_ip_by_net_interface(ifce)
         if ip is None:
