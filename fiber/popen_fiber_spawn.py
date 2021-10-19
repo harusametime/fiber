@@ -352,7 +352,7 @@ class Popen(object):
             cloudpickle.dump(data, fp)
         else:
             logger.debug("not in interactive shell, use reduction")
-            reduction.dump(data, fp)
+            reduction.dump(data, fp, 4)
 
     def _launch(self, process_obj):
         logger.debug("%s %s _launch called", process_obj, self)
