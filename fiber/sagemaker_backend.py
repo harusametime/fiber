@@ -89,7 +89,7 @@ class Backend(core.Backend):
         proc.terminate()
 
     def get_listen_addr(self):
-        
+        import socket
         with open('/opt/ml/input/config/resourceconfig.json') as f:
             sagemaker_config = json.load(f)
 
@@ -100,5 +100,8 @@ class Backend(core.Backend):
 
         if ip == "algo-1":
             ip = 'algo-2'
-
+            
+        print(socket.gethostbyname('algo-1'))
+        print(socket.gethostbyname('algo-2'))
+        ip = socket.gethostbyname('algo-2')
         return ip, 0, ifce
