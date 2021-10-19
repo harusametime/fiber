@@ -146,5 +146,9 @@ class Backend(core.Backend):
                 counter += 1
                 time.sleep(1)
         print(ip_address)
-        ip = ip_address[current_host]
+        if host == 'algo-1':
+            ip = ip_address['algo-2']
+        else:
+            ip = ip_address['algo-1']
+        
         return ip, 0, ifce
