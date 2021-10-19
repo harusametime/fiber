@@ -46,7 +46,17 @@ STATUS_MAP = {
 
 HOME_DIR = expanduser("~")
 
-
+def _wait_for_worker_nodes_to_start_sshd(hosts, interval=1, timeout_in_seconds=180):
+    with timeout(seconds=timeout_in_seconds):
+        while hosts:
+            print("hosts that aren't SSHable yet: %s", str(hosts))
+            for host in hosts:
+                ssh_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                if _can_connect(host, 22, ssh_socket):
+                    hosts.remove(host)
+                    print(f"can connect to host: {host}") 
+            time.sleep(interval)
+            
 class Backend(core.Backend):
     name = "sagemaker"
 
@@ -98,10 +108,6 @@ class Backend(core.Backend):
         ifce = 'eth0'
         ip = sagemaker_config["current_host"]
 
-        if ip == "algo-1":
-            ip = 'algo-2'
-            
-        print(socket.gethostbyname('algo-1'))
-        print(socket.gethostbyname('algo-2'))
-        ip = socket.gethostbyname('algo-2')
+        _wait_for_worker_nodes_to_start_sshd(['algo-1','algo-2'], interval=1, timeout_in_seconds=180)
+        
         return ip, 0, ifce
