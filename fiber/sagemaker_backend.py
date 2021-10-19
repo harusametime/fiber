@@ -52,29 +52,6 @@ STATUS_MAP = {
 
 HOME_DIR = expanduser("~")
 
-       
-def _can_connect(host, port, s):
-    try:
-        print("testing connection to host %s", host)
-        s.connect((host, port))
-        s.close()
-        print("can connect to host %s", host)
-        return True
-    except socket.error:
-        print("can't connect to host %s", host)
-        return False
-        
-def _wait_for_worker_nodes_to_start_sshd(hosts, interval=1, timeout_in_seconds=180):
-    while hosts:
-        print("hosts that aren't SSHable yet: %s", str(hosts))
-        for host in hosts:
-            ssh_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            if _can_connect(host, 22, ssh_socket):
-                hosts.remove(host)
-                print(f"can connect to host: {host}") 
-        time.sleep(interval)
-            
-
             
 class Backend(core.Backend):
     name = "sagemaker"
@@ -153,12 +130,12 @@ class Backend(core.Backend):
         if host != 'algo-1':
             ip = ip_address['algo-1']
             
-        for i in range(1,1000):
-            try:
-                s = socket.create_connection((ip_address['algo-1'], i), 2)
-                s.close()
-                print(f"success: port {i}")
-            except socket.error as e:
-                print(f"Error: {e}  port {i}")
+#         for i in range(1,1000):
+#             try:
+#                 s = socket.create_connection((ip_address['algo-1'], i), 2)
+#                 s.close()
+#                 print(f"success: port {i}")
+#             except socket.error as e:
+#                 print(f"Error: {e}  port {i}")
  
         return ip, 0, ifce
