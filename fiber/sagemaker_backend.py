@@ -118,68 +118,47 @@ class Backend(core.Backend):
         proc.terminate()
         
     def get_listen_addr(self):
-        ip = None
-
-        # if fiber.current_process() is multiprocessing.current_process():
-        if not isinstance(fiber.current_process(), fiber.Process):
-            # not inside docker
-            # logger.debug("use interface docker0")
-            ifce = "eth0"
-            ip = find_ip_by_net_interface(ifce)
-            print(f"inside: {ip}")
-
-        else:
-            # inside a Fiber process
-            # logger.debug("use interface eth0")
-            # ip = find_ip_by_net_interface("eth0")
-            ip, ifce = find_listen_address()
-            print(f"inside: {ip}")
-
-
-        # ip = find_ip_by_net_interface(ifce)
-        if ip is None:
-            raise mp.ProcessError(
-                "Can't find a usable IPv4 address to listen. ifce_name: {}, "
-                "ifces: {}".format(ifce, psutil.net_if_addrs())
-            )
-        # use 0 to bind to a random free port number
-        return ip, 0, ifce
-#     def get_listen_addr(self):
-#         import socket
+        import socket
         
-#         counter = 0
-#         timeout = 60
+        counter = 0
+        timeout = 60
         
-#         hosts = []
-#         ifce = ''
-#         current_host = ''
+        hosts = []
+        ifce = ''
+        current_host = ''
         
-#         while len(hosts)==0 and counter < timeout:
-#             with open('/opt/ml/input/config/resourceconfig.json') as f:
-#                 sagemaker_config = json.load(f)
-#                 hosts = sagemaker_config['hosts']
-#                 ifce = sagemaker_config['network_interface_name']
-#                 current_host = sagemaker_config['current_host']
-#                 print(sagemaker_config)
-#                 break
-#             counter += 1
-#             time.sleep(1)
+        while len(hosts)==0 and counter < timeout:
+            with open('/opt/ml/input/config/resourceconfig.json') as f:
+                sagemaker_config = json.load(f)
+                hosts = sagemaker_config['hosts']
+                ifce = sagemaker_config['network_interface_name']
+                current_host = sagemaker_config['current_host']
+                print(sagemaker_config)
+                break
+            counter += 1
+            time.sleep(1)
                 
-#         counter = 0
-#         ip_address = {}
+        counter = 0
+        ip_address = {}
         
-#         while len(ip_address)==0 and counter < timeout:
-#             try:
-#                 for host in hosts:
-#                     ip_address[host] = socket.gethostbyname(host)
-#                 break
-#             except Exception:
-#                 counter += 1
-#                 time.sleep(1)
-#         print(ip_address)
-#         if host == 'algo-1':
-#             ip = ip_address['algo-2']
-#         else:
-#             ip = ip_address['algo-1']
-        
-#         return ip, 0, ifce
+        while len(ip_address)==0 and counter < timeout:
+            try:
+                for host in hosts:
+                    ip_address[host] = socket.gethostbyname(host)
+                break
+            except Exception:
+                counter += 1
+                time.sleep(1)
+        print(ip_address)
+        if host != 'algo-1':
+            ip = ip_address['algo-1']
+            
+        for i in range(1,1000):
+            try:
+                s = socket.create_connection((ip_address['algo-1'], i), 2)
+                s.close()
+                print(f"success: port {i}")
+            except socket.error as e:
+                print(f"Error: {e}  port {i}")
+ 
+        return ip, 0, ifce
