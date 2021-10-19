@@ -47,17 +47,6 @@ STATUS_MAP = {
 
 HOME_DIR = expanduser("~")
 
-def _wait_for_worker_nodes_to_start_sshd(hosts, interval=1, timeout_in_seconds=180):
-    with timeout(seconds=timeout_in_seconds):
-        while hosts:
-            print("hosts that aren't SSHable yet: %s", str(hosts))
-            for host in hosts:
-                ssh_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                if _can_connect(host, 22, ssh_socket):
-                    hosts.remove(host)
-                    print(f"can connect to host: {host}") 
-            time.sleep(interval)
-            
 def timeout(seconds=0, minutes=0, hours=0):
     """
     Add a signal-based timeout to any block of code.
@@ -94,6 +83,18 @@ def _can_connect(host, port, s):
         print("can't connect to host %s", host)
         return False
         
+def _wait_for_worker_nodes_to_start_sshd(hosts, interval=1, timeout_in_seconds=180):
+    with timeout(seconds=timeout_in_seconds):
+        while hosts:
+            print("hosts that aren't SSHable yet: %s", str(hosts))
+            for host in hosts:
+                ssh_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                if _can_connect(host, 22, ssh_socket):
+                    hosts.remove(host)
+                    print(f"can connect to host: {host}") 
+            time.sleep(interval)
+            
+
             
 class Backend(core.Backend):
     name = "sagemaker"
