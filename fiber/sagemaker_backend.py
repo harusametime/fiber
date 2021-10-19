@@ -47,31 +47,7 @@ STATUS_MAP = {
 
 HOME_DIR = expanduser("~")
 
-def timeout(seconds=0, minutes=0, hours=0):
-    """
-    Add a signal-based timeout to any block of code.
-    If multiple time units are specified, they will be added together to determine time limit.
-    Usage:
-    with timeout(seconds=5):
-        my_slow_function(...)
-    Args:
-        - seconds: The time limit, in seconds.
-        - minutes: The time limit, in minutes.
-        - hours: The time limit, in hours.
-    """
-
-    limit = seconds + 60 * minutes + 3600 * hours
-
-    def handler(signum, frame):  # pylint: disable=W0613
-        raise TimeoutError("timed out after {} seconds".format(limit))
-
-    try:
-        signal.signal(signal.SIGALRM, handler)
-        signal.setitimer(signal.ITIMER_REAL, limit)
-        yield
-    finally:
-        signal.alarm(0)
-        
+       
 def _can_connect(host, port, s):
     try:
         print("testing connection to host %s", host)
@@ -84,15 +60,14 @@ def _can_connect(host, port, s):
         return False
         
 def _wait_for_worker_nodes_to_start_sshd(hosts, interval=1, timeout_in_seconds=180):
-    with timeout(seconds=timeout_in_seconds):
-        while hosts:
-            print("hosts that aren't SSHable yet: %s", str(hosts))
-            for host in hosts:
-                ssh_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                if _can_connect(host, 22, ssh_socket):
-                    hosts.remove(host)
-                    print(f"can connect to host: {host}") 
-            time.sleep(interval)
+    while hosts:
+        print("hosts that aren't SSHable yet: %s", str(hosts))
+        for host in hosts:
+            ssh_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            if _can_connect(host, 22, ssh_socket):
+                hosts.remove(host)
+                print(f"can connect to host: {host}") 
+        time.sleep(interval)
             
 
             
