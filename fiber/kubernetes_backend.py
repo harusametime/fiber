@@ -285,11 +285,13 @@ class Backend(core.Backend):
             # logger.debug("use interface docker0")
             ifce = "eth0"
             ip = find_ip_by_net_interface(ifce)
+            print(f"not inside: {ip}")
         else:
             # inside a Fiber process
             # logger.debug("use interface eth0")
             # ip = find_ip_by_net_interface("eth0")
             ip, ifce = find_listen_address()
+            print(f"inside: {ip}")
 
         # ip = find_ip_by_net_interface(ifce)
         if ip is None:
@@ -297,5 +299,6 @@ class Backend(core.Backend):
                 "Can't find a usable IPv4 address to listen. ifce_name: {}, "
                 "ifces: {}".format(ifce, psutil.net_if_addrs())
             )
+
         # use 0 to bind to a random free port number
         return ip, 0, ifce
