@@ -14,6 +14,10 @@
 
 import json
 import logging
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+
 import multiprocessing as mp
 import os
 import sys
