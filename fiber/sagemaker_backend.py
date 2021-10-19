@@ -115,14 +115,36 @@ class Backend(core.Backend):
 
     def get_listen_addr(self):
         import socket
-        with open('/opt/ml/input/config/resourceconfig.json') as f:
-            sagemaker_config = json.load(f)
-
-        print(sagemaker_config)
-        #ifce = sagemaker_config["network_interface_name"]
-        ifce = 'eth0'
-        ip = sagemaker_config["current_host"]
-
-        _wait_for_worker_nodes_to_start_sshd(['algo-1','algo-2'], interval=1, timeout_in_seconds=180)
         
+        counter = 0
+        timeout = 60
+        
+        hosts = []
+        ifce = ''
+        current_host = ''
+        
+        while len(hosts)==0 and counter < timeout:
+            with open('/opt/ml/input/config/resourceconfig.json') as f:
+                sagemaker_config = json.load(f)
+                hosts = sagemaker_config['hosts']
+                ifce = sagemaker_config['network_interface_name']
+                current_host = sagemaker_config['current_host']
+                print(sagemaker_config)
+                break
+            counter += 1
+            time.sleep(1)
+                
+        counter = 0
+        ip_address = {}
+        
+        while len(ip_address)==0 and counter < timeout:
+            try:
+                for host in hosts:
+                    ip_address[host] = socket.gethostbyname(host)
+                break
+            except Exception:
+                counter += 1
+                time.sleep(1)
+        print(ip_address)
+        ip = ip_address[current_host]
         return ip, 0, ifce
