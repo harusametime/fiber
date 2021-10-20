@@ -146,7 +146,7 @@ def fiber_background(listen_addr, event_dict):
         # struct.unpack returns a tuple event if the result only has
         # one element
         ident = struct.unpack("<I", buf)[0]
-        event = event_dict.get(str(admin_host) +':'+str(ident), None)
+        event = event_dict.get(str(admin_host) + ':' +str(ident), None)
         if event is None:
             logger.warn(
                 "something is wrong, no event found for this id: %s", ident
@@ -417,7 +417,7 @@ class Popen(object):
 
         event = threading.Event()
         event.clear()
-        _event_dict[str(admin_host) + ':' str(ident)] = event
+        _event_dict[str(admin_host) + ':' + str(ident)] = event
         logger.debug(
             "%s popen_fiber_spawn created event %s and set _event_dict[%s]",
             self,
