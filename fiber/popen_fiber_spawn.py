@@ -388,8 +388,6 @@ class Popen(object):
         # Setup networking
         ident = next(_event_counter)
         
-        # add hostname to identify which host generates ident
-        ident = self.host_name + str(ident)
         self.ident = ident
         # this needs to happen after self._setup_listen where port is decided
         global admin_host, admin_port
@@ -419,7 +417,7 @@ class Popen(object):
 
         event = threading.Event()
         event.clear()
-        _event_dict[ident] = event
+        _event_dict[str(admin_host) + ':' str(ident)] = event
         logger.debug(
             "%s popen_fiber_spawn created event %s and set _event_dict[%s]",
             self,
