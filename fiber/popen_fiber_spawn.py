@@ -211,10 +211,11 @@ class Popen(object):
         self._exiting = None
         self.sentinel = None
         self.ident = None
-
+        
+        
         if launch:
-            self.
-            (process_obj)
+            self._launch(process_obj)
+
 
     def launch_fiber_background_thread_if_needed(self):
         global _fiber_background_thread_lock
