@@ -65,7 +65,7 @@ conn, _ = sock.accept();
 """
 
 fiber_init_end = """
-conn.send(struct.pack("<I", {id}));
+conn.send(struct.pack("<s", {id}));
 fd = conn.fileno();
 print(fd);
 exitcode = fiber.spawn.spawn_prepare(fd);
