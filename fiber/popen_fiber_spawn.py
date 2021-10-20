@@ -146,7 +146,7 @@ def fiber_background(listen_addr, event_dict):
         # struct.unpack returns a tuple event if the result only has
         # one element
         ident = struct.unpack("<I", buf)[0]
-        event = event_dict.get(ident, None)
+        event = event_dict.get(str(admin_host) +':'+str(ident), None)
         if event is None:
             logger.warn(
                 "something is wrong, no event found for this id: %s", ident
