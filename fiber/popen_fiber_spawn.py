@@ -85,6 +85,24 @@ _event_dict = {}
 _event_counter = itertools.count(1)
 
 
+def _read_sagemaker_hosts():
+    import json
+    timeout = 60
+    counter = 0
+    hosts = []
+    while len(hosts)==0 and counter < timeout:
+        with open('/opt/ml/input/config/resourceconfig.json') as f:
+            sagemaker_config = json.load(f)
+            hosts = sagemaker_config['hosts']
+            ifce = sagemaker_config['network_interface_name']
+            current_host = sagemaker_config['current_host']
+            print(sagemaker_config)
+            break
+        counter += 1
+        time.sleep(1)
+    return hosts, ifce, current_host
+   
+
 def get_fiber_init():
     if config.ipc_active:
         fiber_init = fiber_init_start + fiber_init_net_active + fiber_init_end
@@ -177,13 +195,15 @@ class Popen(object):
         self.backend = get_backend()
 
         ip, _, _ = self.backend.get_listen_addr()
-
+        sm_hosts, sm_ifce, sm_current_host = _read_sagemaker_hosts()
+        
         self.master_host = ip
         self.master_port = config.ipc_admin_master_port
         self.worker_port = config.ipc_admin_worker_port
 
         self.sock = None
         self.host = ""
+        self.host_name = sm_current_host
 
         self.job = None
         self.pid = None
@@ -193,7 +213,8 @@ class Popen(object):
         self.ident = None
 
         if launch:
-            self._launch(process_obj)
+            self.
+            (process_obj)
 
     def launch_fiber_background_thread_if_needed(self):
         global _fiber_background_thread_lock
@@ -365,6 +386,9 @@ class Popen(object):
 
         # Setup networking
         ident = next(_event_counter)
+        
+        # add hostname to identify which host generates ident
+        ident = self.host_name + str(ident)
         self.ident = ident
         # this needs to happen after self._setup_listen where port is decided
         global admin_host, admin_port
