@@ -126,9 +126,9 @@ class Backend(core.Backend):
             except Exception:
                 counter += 1
                 time.sleep(1)
-        print(ip_address)
+
         if host != 'algo-1':
             ip = ip_address['algo-1']
         
  
-        return ip, 1001, ifce
+        return ip, 0, ifce
