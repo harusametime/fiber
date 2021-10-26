@@ -148,8 +148,10 @@ def fiber_background(listen_addr, event_dict):
         conn_ev, addr_ev = sock_event.accept()
         logger.debug("got connection from %s for event", addr_ev)
         buf_ev = conn_ev.recv(64)
+        logger.debug("received_data: %s", buf_ev)
         msg = buf_ev.decode("utf-8")
         print(f"received: {msg}")
+        logger.debug("received_data: %s", msg)
         
         conn, addr = sock.accept()
         logger.debug("got connection from %s", addr)
@@ -432,7 +434,7 @@ class Popen(object):
         
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock_ev:
             sock_ev.connect((admin_host, 2525))
-            sock_ev.sendall(b'test message')
+            sock_ev.sendall(b'str(admin_host) + ':' + str(ident)')
             
         _event_dict[str(admin_host) + ':' + str(ident)] = event
         logger.debug(
