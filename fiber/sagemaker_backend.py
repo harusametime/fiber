@@ -127,8 +127,10 @@ class Backend(core.Backend):
                 counter += 1
                 time.sleep(1)
 
-        if host != 'algo-1':
-            ip = ip_address['algo-1']
+        ip = ip_address['algo-1']   
+#         if host != 'algo-1':
+#             ip = ip_address['algo-1']
+            
         
  
         return ip, 0, ifce
