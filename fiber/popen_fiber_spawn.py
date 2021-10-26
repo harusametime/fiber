@@ -65,7 +65,7 @@ conn, _ = sock.accept();
 """
 
 fiber_init_end = """
-print(host,port);
+print(f"host:{host}, port:{port}");
 conn.send(struct.pack("<I", {id}));
 fd = conn.fileno();
 print(fd);
