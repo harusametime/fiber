@@ -129,13 +129,6 @@ class Backend(core.Backend):
         print(ip_address)
         if host != 'algo-1':
             ip = ip_address['algo-1']
-            
-#         for i in range(1,1000):
-#             try:
-#                 s = socket.create_connection((ip_address['algo-1'], i), 2)
-#                 s.close()
-#                 print(f"success: port {i}")
-#             except socket.error as e:
-#                 print(f"Error: {e}  port {i}")
+        
  
-        return ip, 0, ifce
+        return ip, 1001, ifce
