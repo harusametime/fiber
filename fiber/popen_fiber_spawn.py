@@ -148,7 +148,8 @@ def fiber_background(listen_addr, event_dict):
         conn_ev, addr_ev = sock_event.accept()
         logger.debug("got connection from %s for event", addr_ev)
         buf_ev = conn_ev.recv(64)
-        print(f"received: {buf_ev.decode("utf-8")}")
+        msg = buf_ev.decode("utf-8")
+        print(f"received: {msg}")
         
         conn, addr = sock.accept()
         logger.debug("got connection from %s", addr)
