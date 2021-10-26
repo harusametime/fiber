@@ -433,9 +433,15 @@ class Popen(object):
         event.clear()
         
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock_ev:
-            sock_ev.connect((admin_host, 2525))
-            msg = str(admin_host) + '-' + str(ident)+ ':' +event
-            sock_ev.sendall(msg.encode('utf-8'))
+            while True:
+                try:
+                    sock_ev.connect((admin_host, 2525))
+                    msg = str(admin_host) + '-' + str(ident)+ ':' +event
+                    sock_ev.sendall(msg.encode('utf-8'))
+                except socket_error as serr:
+                    if serr.errno != errno.ECONNREFUSED:
+                        raise serr
+                time.sleep(0.1)
             
         _event_dict[str(admin_host) + ':' + str(ident)] = event
         logger.debug(
