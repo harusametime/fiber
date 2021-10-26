@@ -20,6 +20,8 @@ import logging
 import multiprocessing as mp
 import os
 import socket
+from socket import error as socket_error
+
 import struct
 import subprocess
 import sys
