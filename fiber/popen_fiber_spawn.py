@@ -119,11 +119,15 @@ def fiber_background(listen_addr, event_dict):
 
     # Background thread for handling inter fiber process admin traffic
     ip, port = listen_addr
+    event_port = 2525
     host = ""
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock_event = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.bind((host, int(port)))
+    sock_event.bind((host, event_port))
     logger.debug("fiber background thread attempt to bind %s:%s", host, port)
+    logger.debug("fiber background thread attempt to bind for event %s:%s", host, event_port)
     # fix port number (could be 0 previously)
     _, port = sock.getsockname()
     logger.debug("fiber background thread bind addr is to %s:%s", host, port)
@@ -131,6 +135,7 @@ def fiber_background(listen_addr, event_dict):
     # to make Fiber work with 3.4, here we set a reasonable listen backlog
     # size. See https://docs.python.org/3.4/library/socket.html
     sock.listen(5)
+    sock_event.listen(5)
 
     admin_host = ip
     admin_port = port
@@ -140,6 +145,11 @@ def fiber_background(listen_addr, event_dict):
     sentinel.set()
     logger.debug("fiber_background thread ready")
     while True:
+        conn_ev, addr_ev = sock_event.accept()
+        logger.debug("got connection from %s for event", addr_ev)
+        buf_ev = conn_ev.recv(64)
+        print(f"received: {buf_ev.decode("utf-8")}")
+        
         conn, addr = sock.accept()
         logger.debug("got connection from %s", addr)
         # fixed 4 byte id
@@ -418,6 +428,11 @@ class Popen(object):
 
         event = threading.Event()
         event.clear()
+        
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock_ev:
+            sock_ev.connect((admin_host, 2525))
+            sock_ev.sendall(b'test message')
+            
         _event_dict[str(admin_host) + ':' + str(ident)] = event
         logger.debug(
             "%s popen_fiber_spawn created event %s and set _event_dict[%s]",
