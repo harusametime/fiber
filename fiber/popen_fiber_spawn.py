@@ -19,6 +19,8 @@ import itertools
 import logging
 import multiprocessing as mp
 import os
+
+import errno
 import socket
 from socket import error as socket_error
 
