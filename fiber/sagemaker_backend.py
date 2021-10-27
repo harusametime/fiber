@@ -132,8 +132,9 @@ class Backend(core.Backend):
 
         ip = ip_address[current_host]
         global GLOBAL_MASTER_IP
-        global CURRENT_HOST = ip
+        global CURRENT_HOST
         GLOBAL_MASTER_IP = ip_address['algo-1']
+        CURRENT_HOST = ip
 #         if host != 'algo-1':
 #             ip = ip_address['algo-1']
 
