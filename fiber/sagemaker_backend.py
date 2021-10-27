@@ -42,7 +42,7 @@ from fiber.util import find_ip_by_net_interface, find_listen_address
 logger = logging.getLogger('fiber')
 
 GLOBAL_MASTER_IP = ''
-
+CURRENT_HOST = ''
 
 STATUS_MAP = {
     "restarting": ProcessStatus.INITIAL,
@@ -66,7 +66,7 @@ class Backend(core.Backend):
         print(job_spec)
         job = core.Job(proc, proc.pid)
         # job.host = 'localhost'
-        job.host = GLOBAL_MASTER_IP
+        job.host = CURRENT_HOST
 
         return job
 
@@ -132,6 +132,7 @@ class Backend(core.Backend):
 
         ip = ip_address[current_host]
         global GLOBAL_MASTER_IP
+        global CURRENT_HOST = ip
         GLOBAL_MASTER_IP = ip_address['algo-1']
 #         if host != 'algo-1':
 #             ip = ip_address['algo-1']
