@@ -440,7 +440,7 @@ class Popen(object):
             while True:
                 try:
                     sock_ev.connect((admin_host, 2525))
-                    msg = str(admin_host) + '-' + str(ident)+ ':' +event
+                    msg = str(admin_host) + '-' + str(ident)+ ':' + str(event)
                     sock_ev.sendall(msg.encode('utf-8'))
                 except socket_error as serr:
                     if serr.errno != errno.ECONNREFUSED:
