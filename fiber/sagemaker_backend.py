@@ -41,6 +41,8 @@ from fiber.util import find_ip_by_net_interface, find_listen_address
 
 logger = logging.getLogger('fiber')
 
+GLOBAL_MASTER_IP = ''
+
 
 STATUS_MAP = {
     "restarting": ProcessStatus.INITIAL,
@@ -52,7 +54,7 @@ STATUS_MAP = {
 
 HOME_DIR = expanduser("~")
 
-            
+
 class Backend(core.Backend):
     name = "sagemaker"
 
@@ -63,7 +65,7 @@ class Backend(core.Backend):
         proc = subprocess.Popen(job_spec.command)
         print(job_spec)
         job = core.Job(proc, proc.pid)
-        job.host = 'localhost'
+        job.host = GLOBAL_MASTER_IP
 
         return job
 
@@ -93,17 +95,17 @@ class Backend(core.Backend):
         proc = job.data
 
         proc.terminate()
-        
+
     def get_listen_addr(self):
         import socket
-        
+
         counter = 0
         timeout = 60
-        
+
         hosts = []
         ifce = ''
         current_host = ''
-        
+
         while len(hosts)==0 and counter < timeout:
             with open('/opt/ml/input/config/resourceconfig.json') as f:
                 sagemaker_config = json.load(f)
@@ -114,10 +116,10 @@ class Backend(core.Backend):
                 break
             counter += 1
             time.sleep(1)
-                
+
         counter = 0
         ip_address = {}
-        
+
         while len(ip_address)==0 and counter < timeout:
             try:
                 for host in hosts:
@@ -127,10 +129,12 @@ class Backend(core.Backend):
                 counter += 1
                 time.sleep(1)
 
-        ip = ip_address['algo-1']   
+        ip = ip_address[current_host]
+        global GLOBAL_MASTER_IP
+        GLOBAL_MASTER_IP = ip_address['algo-1']
 #         if host != 'algo-1':
 #             ip = ip_address['algo-1']
-            
-        
- 
+
+
+
         return ip, 0, ifce
