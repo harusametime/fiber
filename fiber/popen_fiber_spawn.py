@@ -504,7 +504,7 @@ class Popen(object):
                     continue
                 break
 
-        logger.debug("send buffer to (%s, %s) in %s", ip, port, str(config.ipc_active))
+            logger.debug("send buffer to (%s, %s) in %s", ip, port, str(config.ipc_active))
         logger.debug(send_buffer)
         conn.send(send_buffer)
 
