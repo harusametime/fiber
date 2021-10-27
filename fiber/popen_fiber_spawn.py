@@ -19,11 +19,7 @@ import itertools
 import logging
 import multiprocessing as mp
 import os
-
-import errno
 import socket
-from socket import error as socket_error
-
 import struct
 import subprocess
 import sys
@@ -69,10 +65,8 @@ conn, _ = sock.accept();
 """
 
 fiber_init_end = """
-print(f"host:{host}, port:{port}");
 conn.send(struct.pack("<I", {id}));
 fd = conn.fileno();
-print(fd);
 exitcode = fiber.spawn.spawn_prepare(fd);
 sys.exit(exitcode)
 """
@@ -90,24 +84,6 @@ _event_dict = {}
 _event_counter = itertools.count(1)
 
 
-def _read_sagemaker_hosts():
-    import json
-    timeout = 60
-    counter = 0
-    hosts = []
-    while len(hosts)==0 and counter < timeout:
-        with open('/opt/ml/input/config/resourceconfig.json') as f:
-            sagemaker_config = json.load(f)
-            hosts = sagemaker_config['hosts']
-            ifce = sagemaker_config['network_interface_name']
-            current_host = sagemaker_config['current_host']
-            print(sagemaker_config)
-            break
-        counter += 1
-        time.sleep(1)
-    return hosts, ifce, current_host
-   
-
 def get_fiber_init():
     if config.ipc_active:
         fiber_init = fiber_init_start + fiber_init_net_active + fiber_init_end
@@ -123,15 +99,11 @@ def fiber_background(listen_addr, event_dict):
 
     # Background thread for handling inter fiber process admin traffic
     ip, port = listen_addr
-    event_port = 2525
     host = ""
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock_event = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.bind((host, int(port)))
-    sock_event.bind((host, event_port))
+    sock.bind((host, port))
     logger.debug("fiber background thread attempt to bind %s:%s", host, port)
-    logger.debug("fiber background thread attempt to bind for event %s:%s", host, event_port)
     # fix port number (could be 0 previously)
     _, port = sock.getsockname()
     logger.debug("fiber background thread bind addr is to %s:%s", host, port)
@@ -139,7 +111,6 @@ def fiber_background(listen_addr, event_dict):
     # to make Fiber work with 3.4, here we set a reasonable listen backlog
     # size. See https://docs.python.org/3.4/library/socket.html
     sock.listen(5)
-    sock_event.listen(5)
 
     admin_host = ip
     admin_port = port
@@ -149,14 +120,6 @@ def fiber_background(listen_addr, event_dict):
     sentinel.set()
     logger.debug("fiber_background thread ready")
     while True:
-        conn_ev, addr_ev = sock_event.accept()
-        logger.debug("got connection from %s for event", addr_ev)
-        buf_ev = conn_ev.recv(64)
-        logger.debug("received_data: %s", buf_ev)
-        msg = buf_ev.decode("utf-8")
-        index, event_from_host = msg.split(':')
-        event_dict[index] = event_from_host        
-        
         conn, addr = sock.accept()
         logger.debug("got connection from %s", addr)
         # fixed 4 byte id
@@ -164,7 +127,7 @@ def fiber_background(listen_addr, event_dict):
         # struct.unpack returns a tuple event if the result only has
         # one element
         ident = struct.unpack("<I", buf)[0]
-        event = event_dict.get(str(admin_host) + ':' +str(ident), None)
+        event = event_dict.get(ident, None)
         if event is None:
             logger.warn(
                 "something is wrong, no event found for this id: %s", ident
@@ -213,15 +176,13 @@ class Popen(object):
         self.backend = get_backend()
 
         ip, _, _ = self.backend.get_listen_addr()
-        sm_hosts, sm_ifce, sm_current_host = _read_sagemaker_hosts()
-        
+
         self.master_host = ip
         self.master_port = config.ipc_admin_master_port
         self.worker_port = config.ipc_admin_worker_port
 
         self.sock = None
         self.host = ""
-        self.host_name = sm_current_host
 
         self.job = None
         self.pid = None
@@ -229,11 +190,9 @@ class Popen(object):
         self._exiting = None
         self.sentinel = None
         self.ident = None
-        
-        
+
         if launch:
             self._launch(process_obj)
-
 
     def launch_fiber_background_thread_if_needed(self):
         global _fiber_background_thread_lock
@@ -392,7 +351,7 @@ class Popen(object):
             cloudpickle.dump(data, fp)
         else:
             logger.debug("not in interactive shell, use reduction")
-            reduction.dump(data, fp, 4)
+            reduction.dump(data, fp)
 
     def _launch(self, process_obj):
         logger.debug("%s %s _launch called", process_obj, self)
@@ -405,7 +364,6 @@ class Popen(object):
 
         # Setup networking
         ident = next(_event_counter)
-        
         self.ident = ident
         # this needs to happen after self._setup_listen where port is decided
         global admin_host, admin_port
@@ -435,19 +393,7 @@ class Popen(object):
 
         event = threading.Event()
         event.clear()
-        
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock_ev:
-            while True:
-                try:
-                    sock_ev.connect((admin_host, 2525))
-                    msg = str(admin_host) + '-' + str(ident)+ ':' + str(event)
-                    sock_ev.sendall(msg.encode('utf-8'))
-                except socket_error as serr:
-                    if serr.errno != errno.ECONNREFUSED:
-                        raise serr
-                time.sleep(0.1)
-            
-        _event_dict[str(admin_host) + ':' + str(ident)] = event
+        _event_dict[ident] = event
         logger.debug(
             "%s popen_fiber_spawn created event %s and set _event_dict[%s]",
             self,
@@ -558,6 +504,7 @@ class Popen(object):
                 break
 
         logger.debug("send buffer")
+        logger.debug(send buffer)
         conn.send(send_buffer)
 
         # logger.debug("sent fp.getbuffer() to sub process")
