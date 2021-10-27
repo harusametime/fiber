@@ -102,7 +102,8 @@ def fiber_background(listen_addr, event_dict):
     host = ""
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.bind((host, port))
+    logger.debug("fiber background thread attempt to bind %s:%s", host, port)
+    sock.bind((host, int(port)))
     logger.debug("fiber background thread attempt to bind %s:%s", host, port)
     # fix port number (could be 0 previously)
     _, port = sock.getsockname()
