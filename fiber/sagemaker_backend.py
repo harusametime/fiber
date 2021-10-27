@@ -66,7 +66,7 @@ class Backend(core.Backend):
         print(job_spec)
         job = core.Job(proc, proc.pid)
         # job.host = 'localhost'
-        job.host = CURRENT_HOST
+        job.host = GLOBAL_MASTER_IP
 
         return job
 
