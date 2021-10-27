@@ -504,7 +504,7 @@ class Popen(object):
                 break
 
         logger.debug("send buffer")
-        logger.debug(send buffer)
+        logger.debug(send_buffer)
         conn.send(send_buffer)
 
         # logger.debug("sent fp.getbuffer() to sub process")
