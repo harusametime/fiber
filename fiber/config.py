@@ -122,7 +122,7 @@ class Config(object):
         # to the master process. Otherwise, the master process will connect
         # to worker processes.
         # Not documented, should only be used internally
-        self.ipc_active = True
+        self.ipc_active = False #True
         # if ipc_active is True, this can be 0, otherwise, it can only be a
         # valid TCP port number. Default 0.
         self.ipc_admin_master_port = 0
