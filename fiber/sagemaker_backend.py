@@ -65,7 +65,8 @@ class Backend(core.Backend):
         proc = subprocess.Popen(job_spec.command)
         print(job_spec)
         job = core.Job(proc, proc.pid)
-        job.host = GLOBAL_MASTER_IP
+        job.host = 'localhost'
+        # job.host = GLOBAL_MASTER_IP
 
         return job
 
